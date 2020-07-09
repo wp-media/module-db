@@ -39,6 +39,9 @@ abstract class Model {
 	 */
 	protected $definition = [];
 
+	/**
+	 * Contructor
+	 */
 	public function __construct() {
 		parent::__construct();
 	}
@@ -72,6 +75,24 @@ abstract class Model {
 	}
 
 	/**
+	 * Retrieve a row by specific column value.
+	 *
+	 * @param  string $column Database column.
+	 * @param  string $value  Column value.
+	 * @return array
+	 */
+	public function get_by( $column, $value ) {
+		global $wpdb;
+
+		$column_type = ! empty( $this->definition['fields'][ $column ]['type'] ) ? $this->definition['fields'][ $column ]['type'] : '%d';
+		$column      = esc_sql( $column );
+
+		$result = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM ' . $wpdb->prefix . $this->definition['table'] . " WHERE $column = $column_type LIMIT 1;", $value ), OBJECT );
+
+		return $result;
+	}
+
+	/**
 	 * Delete a row identified by the primary key.
 	 *
 	 * @return bool
@@ -83,7 +104,7 @@ abstract class Model {
 			return false;
 		}
 
-		return (bool) $wpdb->query( $wpdb->prepare( "DELETE FROM " . $this->definition['table'] ." WHERE " . $this->definition['primary'] . "= %d", $this->id ) );
+		return (bool) $wpdb->query( $wpdb->prepare( 'DELETE FROM ' . $wpdb->prefix . $this->definition['table'] ." WHERE " . $this->definition['primary'] . "= %d", $this->id ) );
 	}
 
 	/**
@@ -132,7 +153,7 @@ abstract class Model {
 		}
 
 		return (bool) $wpdb->update(
-			$this->definition['table'],
+			$wpdb->prefix . $this->definition['table'],
 			$this->get_fields(),
 			array( $this->definition['primary'] => $this->id ),
 			$this->get_fields_type(),

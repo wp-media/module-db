@@ -34,7 +34,7 @@ class Subscriber implements Subscriber_Interface {
 	 */
 	public static function get_subscribed_events() {
 		return [
-			'rocket_cache' => [ 'save_cache_db', 2, 2 ],
+			'rocket_cache_db' => [ 'save_cache_db', 10, 1 ],
 		];
 	}
 
@@ -44,7 +44,7 @@ class Subscriber implements Subscriber_Interface {
 	 * @since  1.0.0
 	 *
 	 */
-	public function save_cache_db( $cache_dir_path, $request_uri ) {
-		return $this->cache_controller->insert( [ 'url' => $request_uri, 'path' => $cache_dir_path ] );
+	public function save_cache_db( $values ) {
+		return $this->cache_controller->update( $values );
 	}
 }

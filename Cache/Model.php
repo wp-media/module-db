@@ -32,6 +32,20 @@ class Model extends BaseModel {
 	protected $path;
 
 	/**
+	 * User id or NULL.
+	 *
+	 * @var int
+	 */
+	protected $user_id;
+
+	/**
+	 * Cache expiration date.
+	 *
+	 * @var date
+	 */
+	protected $expired;
+
+	/**
 	 * Cache last modified date.
 	 *
 	 * @var date
@@ -49,7 +63,9 @@ class Model extends BaseModel {
 		'fields'  => [
 			'url'      => [ 'type' => self::TYPE_STRING, 'validate' => 'isURL', 'required' => true ],
 			'path'     => [ 'type' => self::TYPE_STRING, 'validate' => 'isString', 'required' => true ],
-			'date_upd' => [ 'type' => self::TYPE_DATE ],
+			'user_id'  => [ 'type' => self::TYPE_INT, 'validate' => 'isInt', 'default' => 0 ],
+			'expired'  => [ 'type' => self::TYPE_BOOL, 'validate' => 'isBool', 'required' => true ],
+			'date_upd' => [ 'type' => self::TYPE_DATE, 'validate' => 'isDate', 'required' => true ],
 		],
 	];
 
@@ -59,10 +75,11 @@ class Model extends BaseModel {
 	 * @param stdClass $record Value from DB.
 	 */
 	public function __construct( $record ) {
-
 		$this->id       = isset( $record->id ) ? $record->id : null;
 		$this->url      = isset( $record->url ) ? $record->url : null;
 		$this->path     = isset( $record->path ) ? $record->path : null;
+		$this->user_id  = isset( $record->user_id ) ? $record->user_id : null;
+		$this->expired  = isset( $record->expired ) ? $record->expired : false;
 		$this->date_upd = isset( $record->date_upd ) ? $record->date_upd : null;
 	}
 }
