@@ -29,7 +29,8 @@ class ServiceProvider extends AbstractServiceProvider {
 	 * @return void
 	 */
 	public function register() {
-		$this->getContainer()->share( 'cache_controller', 'WP_Rocket\Engine\DB\Cache\Controller' );
+		$this->getContainer()->share( 'cache_controller', 'WP_Rocket\Engine\DB\Cache\Controller' )
+			->withArgument( $this->getContainer()->get( 'options' ) );
 		$this->getContainer()->share( 'cache_subscriber', 'WP_Rocket\Engine\DB\Cache\Subscriber' )
 			->withArgument( $this->getContainer()->get( 'cache_controller' ) );
 	}

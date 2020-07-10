@@ -41,12 +41,12 @@ class AdminServiceProvider extends AbstractServiceProvider {
 						`url`      VARCHAR(2500) NOT NULL,
 						`path`     VARCHAR(2500) NOT NULL,
 						`user_id`  INT(6) UNSIGNED NOT NULL DEFAULT 0,
-						`expired`  TINYINT(1) NOT NULL DEFAULT 0,
+						`expiry`   TIMESTAMP,
 						`date_upd` TIMESTAMP,
 						PRIMARY KEY  (id),
 						INDEX path (`path`),
 						INDEX url_path (`url`, `path`),
-						INDEX expired (`expired`, `date_upd`)
+						INDEX expired (`expiry`, `date_upd`)
 						)",
 				],
 				'wpr_critical_css' => [

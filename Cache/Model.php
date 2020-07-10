@@ -43,7 +43,7 @@ class Model extends BaseModel {
 	 *
 	 * @var date
 	 */
-	protected $expired;
+	protected $expiry;
 
 	/**
 	 * Cache last modified date.
@@ -64,7 +64,7 @@ class Model extends BaseModel {
 			'url'      => [ 'type' => self::TYPE_STRING, 'validate' => 'isURL', 'required' => true ],
 			'path'     => [ 'type' => self::TYPE_STRING, 'validate' => 'isString', 'required' => true ],
 			'user_id'  => [ 'type' => self::TYPE_INT, 'validate' => 'isInt', 'default' => 0 ],
-			'expired'  => [ 'type' => self::TYPE_BOOL, 'validate' => 'isBool', 'required' => true ],
+			'expiry'   => [ 'type' => self::TYPE_DATE, 'validate' => 'isDate', 'required' => true ],
 			'date_upd' => [ 'type' => self::TYPE_DATE, 'validate' => 'isDate', 'required' => true ],
 		],
 	];
@@ -79,7 +79,7 @@ class Model extends BaseModel {
 		$this->url      = isset( $record->url ) ? $record->url : null;
 		$this->path     = isset( $record->path ) ? $record->path : null;
 		$this->user_id  = isset( $record->user_id ) ? $record->user_id : null;
-		$this->expired  = isset( $record->expired ) ? $record->expired : false;
+		$this->expiry   = isset( $record->expiry ) ? $record->expiry : false;
 		$this->date_upd = isset( $record->date_upd ) ? $record->date_upd : null;
 	}
 }
