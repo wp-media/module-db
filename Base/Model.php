@@ -77,18 +77,55 @@ abstract class Model {
 	/**
 	 * Retrieve a row by specific column value.
 	 *
-	 * @param  string $column Database column.
-	 * @param  string $value  Column value.
+	 * @param  string $table       Database table.
+	 * @param  string $column      Database column.
+	 * @param  string $column_type Database column type.
+	 * @param  string $value       Column value.
 	 * @return array
 	 */
-	public function get_by( $column, $value ) {
+	public static function get_by( $table, $column, $column_type, $value ) {
 		global $wpdb;
 
-		$column_type = ! empty( $this->definition['fields'][ $column ]['type'] ) ? $this->definition['fields'][ $column ]['type'] : '%d';
+		$column = esc_sql( $column );
+		$result = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM ' . $wpdb->prefix . $table . " WHERE $column = $column_type LIMIT 1;", $value ), OBJECT );
+
+		return $result;
+	}
+
+
+	/**
+	 * Retrieve all rows by specific column value with operator, limit and order by.
+	 *
+	 * @param  string $table       Database table.
+	 * @param  string $column      Database column.
+	 * @param  string $column_type Database column type.
+	 * @param  string $value       Database column value.
+	 * @param  string $operator    Where condition operator.
+	 * @param  bool   $count       Select count.
+	 * @param  int    $page        SQL Limit page no.
+	 * @param  int    $limit       SQL Limit value .
+	 * @param  string $order_by    SQL Order by.
+	 * @param  string $order_value SQL Order value.
+	 * @return array
+	 */
+	public static function get_all_by( $table, $column, $column_type, $value, $operator = '=', $count = false, $page = 0, $limit = 10, $order_by = null, $order_value = 'asc' ) {
+		global $wpdb;
+
 		$column      = esc_sql( $column );
+		$operator    = esc_sql( $operator );
 
-		$result = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM ' . $wpdb->prefix . $this->definition['table'] . " WHERE $column = $column_type LIMIT 1;", $value ), OBJECT );
+		if ( ! empty( $order_by ) ) {
+			$order_by_value = 'ORDER BY ' . esc_sql( $order_by ) . ' ' . $order_value;
+		}
 
+		$limit = 'LIMIT ' . (int) $page . ', ' . (int) $limit;
+
+		if ( $count ) {
+			$result = $wpdb->get_row( $wpdb->prepare( 'SELECT count(*) as total FROM ' . $wpdb->prefix . $table . " WHERE $column $operator $column_type $order_by_value $limit;", $value ), OBJECT );
+			return $result->total;
+		}
+
+		$result = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM ' . $wpdb->prefix . $table . " WHERE $column $operator $column_type $order_by_value $limit;", $value ), OBJECT );
 		return $result;
 	}
 
@@ -113,7 +150,7 @@ abstract class Model {
 	 * @return bool Insertion result
 	 */
 	public function save() {
-		return (int) $this->id > 0 ? $this->update() : $this->add();
+		return (int) $this->id > 0 ? $this->update_by_id() : $this->add();
 	}
 
 	/**
@@ -145,7 +182,7 @@ abstract class Model {
 	 *
 	 * @return bool
 	 */
-	public function update() {
+	public function update_by_id() {
 		global $wpdb;
 
 		if ( $this->id <= 0 ) {
@@ -159,6 +196,21 @@ abstract class Model {
 			$this->get_fields_type(),
 			'%d'
 		);
+	}
+
+	/**
+	 * Update all columns in the table.
+	 *
+	 * @return bool
+	 */
+	public static function update_all_column_values( $table, $column = null, $value = null ) {
+		global $wpdb;
+
+		if ( empty( $column ) ) {
+			return false;
+		}
+
+		return (bool) $wpdb->query( $wpdb->prepare( 'UPDATE ' . $wpdb->prefix . $table ." SET $column = %s WHERE 1 ", $value ) );
 	}
 
 	/**

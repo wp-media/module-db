@@ -53,6 +53,13 @@ class Model extends BaseModel {
 	protected $date_upd;
 
 	/**
+	 * Database table name without WP prefix.
+	 *
+	 * @var string
+	 */
+	public static $table = 'wpr_cache';
+
+	/**
 	 * Database object definition.
 	 *
 	 * @see ObjectModel::$definition
@@ -81,5 +88,45 @@ class Model extends BaseModel {
 		$this->user_id  = isset( $record->user_id ) ? $record->user_id : null;
 		$this->expiry   = isset( $record->expiry ) ? $record->expiry : false;
 		$this->date_upd = isset( $record->date_upd ) ? $record->date_upd : null;
+	}
+
+	/**
+	 * Get expired cache based on expiry field.
+	 *
+	 * @return mixed Array of Cache Model.
+	 */
+	public static function get_expired_cache( $count = false, $p = 0, $n = 10 ) {
+		$result = self::get_all_by( self::$table, 'expiry', '%s', 'NOW()', '<=', $count, $p, $n, 'expiry' );
+		if ( $count ) {
+			return (int) $result;
+		}
+
+		$expired_cache = [];
+		foreach ( $result as $row ) {
+			$expired_cache[] = new self( $row );
+		}
+		return $result;
+	}
+
+	/**
+	 * Get Cache Model By Path.
+	 *
+	 * @return Model
+	 */
+	public static function get_by_path( $path ) {
+		$result = self::get_by( self::$table, 'path', '%s', $path );
+		if ( ! empty( $result ) ) {
+			return new self( $result );
+		}
+		return null;
+	}
+
+	/**
+	 * Invalidate full cache. Set expiry column to now - 1 hour.
+	 *
+	 * @return bool
+	 */
+	public static function invalidate_full_cache() {
+		return self::update_all_column_values( self::$table, 'expiry', date( "Y-m-d H:i:s", ( strtotime( date( "Y-m-d H:i:s" ) ) - 3600 ) ) );
 	}
 }

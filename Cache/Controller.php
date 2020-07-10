@@ -27,24 +27,41 @@ class Controller {
 	}
 
 	/**
+	 * Invalidate full cache (set expiry to past date).
+	 */
+	public function invalidate_full_cache() {
+		Model::invalidate_full_cache();
+	}
+
+	/**
+	 * Get expired cache based on expiry field.
+	 *
+	 * @return array
+	 */
+	public function get_expired_cache() {
+		$expired_cache_count = Model::get_expired_cache( true );
+		$expired_cache_list  = Model::get_expired_cache( false, 0, 20 );
+
+		return $expired_cache_list;
+	}
+
+	/**
 	 * Insert / Update cache row into DB.
 	 *
 	 * @param  array $record Data to be saved.
 	 * @return void
 	 */
 	public function update( array $record ) {
-		$model      = new Model( (object) $record );
-		$cache_path = $model->get( 'path' );
-		if ( ! empty( $cache_path ) ) {
-			$cache_row = $model->get_by( 'path', $cache_path );
-			if ( ! empty( $cache_row ) ) {
-				$model->set( 'id', $cache_row->id );
-			}
+		$cache_exists = Model::get_by_path( $record['path'] );
+		$cache        = new Model( (object) $record );
+
+		if ( isset( $cache_exists ) ) {
+			$cache->set( 'id', $cache_exists->get( 'id' ) );
 		}
 
 		$cache_lifespan = $this->get_cache_lifespan();
-		$model->set( 'expiry', date( "Y-m-d H:i:s", ( strtotime( date( "Y-m-d H:i:s" ) ) + $cache_lifespan ) ) );
-		$model->save();
+		$cache->set( 'expiry', date( "Y-m-d H:i:s", ( strtotime( date( "Y-m-d H:i:s" ) ) + $cache_lifespan ) ) );
+		$cache->save();
 	}
 
 	/**
@@ -65,7 +82,7 @@ class Controller {
 	 *
 	 * @return int The cache lifespan in seconds.
 	 */
-	public function get_cache_lifespan() {
+	private function get_cache_lifespan() {
 		$lifespan = $this->options->get( 'purge_cron_interval' );
 
 		if ( ! $lifespan ) {
